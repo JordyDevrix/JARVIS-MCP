@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: JARVIS
+
+server:
+  port: ${SERVER_PORT:8080}
+
+springdoc:
+  api-docs.enabled: true
+  swagger-ui:
+    enabled: true
+    path: /docs
