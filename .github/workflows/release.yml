@@ -84,3 +84,11 @@ jobs:
           gh release create "${{ steps.tag_version.outputs.version_tag }}" \
             --title "Release ${{ steps.tag_version.outputs.version_tag }}" \
             --generate-notes
+
+  publish-docker:
+    name: Publish Docker Image
+    needs: release
+    uses: ./.github/workflows/docker-publish.yml
+    with:
+      tag: ${{ needs.release.outputs.new_tag }}
+    secrets: inherit
