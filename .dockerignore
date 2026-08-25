@@ -1,0 +1,11 @@
+target/
+.git
+.gitignore
+.dockerignore
+.idea
+*.iml
+*.iws
+*.ipr
+.vscode
+.env
+HELP.md
