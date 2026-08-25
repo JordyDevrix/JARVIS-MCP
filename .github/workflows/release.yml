@@ -32,19 +32,50 @@ jobs:
       - name: Run tests before release
         run: ./mvnw test
 
-      - name: Determine Next Semantic Version
+      - name: Calculate and push new SemVer tag
         id: tag_version
-        uses: PaulHatch/semantic-version@v6
-        with:
-          tag_prefix: "v"
-          major_pattern: "(MAJOR)|(BREAKING)"
-          minor_pattern: "(feat|feature)"
-          version_format: "${major}.${minor}.${patch}"
-
-      - name: Push Git Tag
         run: |
-          git tag "${{ steps.tag_version.outputs.version_tag }}"
-          git push origin "${{ steps.tag_version.outputs.version_tag }}"
+          # Find latest existing SemVer tag or default to v0.0.0
+          LATEST_TAG=$(git describe --tags --match "v[0-9]*" --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Current latest tag: $LATEST_TAG"
+
+          VERSION=${LATEST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          MAJOR=${MAJOR:-0}
+          MINOR=${MINOR:-0}
+          PATCH=${PATCH:-0}
+
+          # Read commit messages since last tag
+          if [ "$LATEST_TAG" = "v0.0.0" ]; then
+            COMMITS=$(git log --pretty=format:"%s")
+          else
+            COMMITS=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%s")
+          fi
+
+          # Determine bump type based on Conventional Commits
+          if echo "$COMMITS" | grep -qE "(BREAKING CHANGE|feat!:)"; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif echo "$COMMITS" | grep -qE "^feat(\(.*\))?:"; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "Calculated new tag: $NEW_TAG"
+
+          # Tag and push using GITHUB_TOKEN
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "$NEW_TAG"
+          git push origin "$NEW_TAG"
+
+          # Set step outputs
+          echo "version_tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${MAJOR}.${MINOR}.${PATCH}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         env:
