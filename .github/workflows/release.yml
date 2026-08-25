@@ -6,22 +6,21 @@ on:
 
 jobs:
   release:
-    name: Create SemVer Tag & Release
+    name: Create version & release
     runs-on: ubuntu-latest
     permissions:
       contents: write
     outputs:
-      new_tag: ${{ steps.tag_version.outputs.new_tag }}
-      new_version: ${{ steps.tag_version.outputs.new_version }}
-      changelog: ${{ steps.tag_version.outputs.changelog }}
+      new_tag: ${{ steps.tag_version.outputs.version_tag }}
+      new_version: ${{ steps.tag_version.outputs.version }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up Java 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '25'
           distribution: 'temurin'
@@ -33,19 +32,24 @@ jobs:
       - name: Run tests before release
         run: ./mvnw test
 
-      - name: Calculate and push new SemVer tag
+      - name: Determine Next Semantic Version
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+        uses: PaulHatch/semantic-version@v6
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          default_bump: patch
-          release_branches: main
+          tag_prefix: "v"
+          major_pattern: "(MAJOR)|(BREAKING)"
+          minor_pattern: "(feat|feature)"
+          version_format: "${major}.${minor}.${patch}"
+
+      - name: Push Git Tag
+        run: |
+          git tag "${{ steps.tag_version.outputs.version_tag }}"
+          git push origin "${{ steps.tag_version.outputs.version_tag }}"
 
       - name: Create GitHub Release
-        if: steps.tag_version.outputs.new_tag != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${{ steps.tag_version.outputs.new_tag }}" \
-            --title "Release ${{ steps.tag_version.outputs.new_tag }}" \
-            --notes "${{ steps.tag_version.outputs.changelog }}"
+          gh release create "${{ steps.tag_version.outputs.version_tag }}" \
+            --title "Release ${{ steps.tag_version.outputs.version_tag }}" \
+            --generate-notes
