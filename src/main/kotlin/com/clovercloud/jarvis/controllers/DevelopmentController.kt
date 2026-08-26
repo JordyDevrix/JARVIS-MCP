@@ -17,4 +17,8 @@ class DevelopmentController {
     @GetMapping("/health")
     fun health(): ResponseEntity<String> = ResponseEntity("Healthy", HttpStatus.OK)
 
+    @ApiResponse(responseCode = "200", description = "Returns a simple pong response")
+    @GetMapping("/ping")
+    fun ping(): ResponseEntity<String> = ResponseEntity("pong", HttpStatus.OK)
+
 }
