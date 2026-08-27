@@ -23,6 +23,14 @@ flightradar24:
   connect-timeout-seconds: 3
   read-timeout-seconds: 5
 
+ovapi:
+  base-url: ${OVAPI_BASE_URL:http://v0.ovapi.nl}
+  gtfs-base-url: ${OVAPI_GTFS_URL:https://gtfs.ovapi.nl/nl}
+  connect-timeout-seconds: 5
+  read-timeout-seconds: 10
+  vehicle-cache-ttl-seconds: 15
+  stop-cache-ttl-hours: 24
+
 mcptools:
   enabled:
     get_current_time: true
@@ -32,3 +40,6 @@ mcptools:
     get_flight_details: false
     get_airport_flights: false
     get_airport_details: false
+    get_live_ov_locations: true
+    get_ov_stop_departures: true
+    search_ov_stops: true
