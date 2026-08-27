@@ -1,37 +1,33 @@
 package com.clovercloud.jarvis.controllers
 
 import com.clovercloud.jarvis.responses.ClockResponse
-import com.clovercloud.jarvis.requests.ClockRequest
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.ai.mcp.annotation.McpTool
+import org.springframework.ai.mcp.annotation.McpToolParam
+import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@RestController
-@RequestMapping("/v1/mcp/clock")
-@Tag(name = "Clock MCP", description = "MCP-compliant endpoint for clock tool")
+@Component
 class ClockMcpController {
-    @Operation(
-        summary = "Execute Clock MCP tool",
-        description = "Returns current time, date, day of week, and epoch timestamp for a timezone as an MCP-compliant result."
+
+    @McpTool(
+        name = "get_current_time",
+        description = "Returns current time, date, day of week, and epoch timestamp for a timezone."
     )
-    @PostMapping
-    fun executeClock(@RequestBody body: ClockRequest?): ResponseEntity<ClockResponse> {
-        val timezone = body?.timezone ?: "UTC"
+    fun getCurrentTime(
+        @McpToolParam(description = "Timezone ID (e.g. UTC, Europe/Amsterdam, America/New_York)", required = false)
+        timezone: String?
+    ): ClockResponse {
+        val tz = timezone?.takeIf { it.isNotBlank() } ?: "UTC"
         val zoneId = try {
-            ZoneId.of(timezone)
+            ZoneId.of(tz)
         } catch (e: Exception) {
             ZoneId.of("UTC")
         }
         val now = ZonedDateTime.now(zoneId)
-        val response = ClockResponse(
+        return ClockResponse(
             isoTimestamp = now.toOffsetDateTime().toString(),
             formattedTime = now.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
             formattedDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
@@ -39,6 +35,5 @@ class ClockMcpController {
             timeZone = zoneId.id,
             epochSeconds = Instant.now().epochSecond
         )
-        return ResponseEntity.ok(response)
     }
 }
