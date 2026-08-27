@@ -1,6 +1,6 @@
 # JARVIS MCP
 
-JARVIS MCP is a Kotlin and Spring Boot service that exposes clock and location tools over HTTP, including MCP-style endpoints.
+JARVIS MCP is a Kotlin and Spring Boot service that exposes clock and location tools over HTTP and MCP endpoints, with version tracking and deployment metadata.
 
 ## Requirements
 
@@ -28,10 +28,17 @@ The compose file publishes `${SERVER_PORT:-8080}` to container port `8080`.
 
 ## API Overview
 
-### Health
+### Health and Version
 
 - `GET /v1/development/health`
 - Response: plain text `Healthy`
+
+- `GET /v1/development/version`
+- Response: JSON with version, gitCommit, buildTime metadata
+
+```bash
+curl "http://localhost:8080/v1/development/version"
+```
 
 ### Tool Endpoints
 
@@ -107,7 +114,9 @@ curl -X POST "http://localhost:8080/v1/mcp/location" \
 ## Code Structure
 
 - `src/main/kotlin/com/clovercloud/jarvis/JarvisApplication.kt`: Spring Boot entry point
-- `src/main/kotlin/com/clovercloud/jarvis/controllers`: HTTP controllers for tools, MCP, and health
+- `src/main/kotlin/com/clovercloud/jarvis/config`: Configuration and logging components
+- `src/main/kotlin/com/clovercloud/jarvis/controllers`: HTTP REST controllers and development endpoints
+- `src/main/kotlin/com/clovercloud/jarvis/tools`: MCP tool implementations (ClockTools, LocationTools)
 - `src/main/kotlin/com/clovercloud/jarvis/requests`: MCP request DTOs
-- `src/main/kotlin/com/clovercloud/jarvis/responses`: response DTOs
-- `src/test/kotlin/com/clovercloud/jarvis`: test sources
+- `src/main/kotlin/com/clovercloud/jarvis/responses`: Response DTOs
+- `src/test/kotlin/com/clovercloud/jarvis`: Test sources
