@@ -1,5 +1,10 @@
 package com.clovercloud.jarvis.responses.flightradar
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+private val FORMATTER_24H = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
 data class AirportFlightItem(
     val flightNumber: String?,
     val callsign: String?,
@@ -18,5 +23,6 @@ data class AirportFlightsResponse(
     val direction: String,
     val totalFlights: Int,
     val flights: List<AirportFlightItem>,
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Airport arrival and departure flight schedules are estimated to be valid for ~1-2 minutes."
 )

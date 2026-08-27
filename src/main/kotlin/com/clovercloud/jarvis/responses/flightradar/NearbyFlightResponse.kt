@@ -1,5 +1,10 @@
 package com.clovercloud.jarvis.responses.flightradar
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+private val FORMATTER_24H = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
 data class NearbyFlight(
     val flightNumber: String?,
     val callsign: String?,
@@ -24,5 +29,6 @@ data class NearbyFlightsResponse(
     val searchRadiusKm: Double,
     val flightsFoundCount: Int,
     val flights: List<NearbyFlight>,
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Live airborne flight positions are estimated to be valid for ~15-30 seconds as aircraft are actively moving."
 )

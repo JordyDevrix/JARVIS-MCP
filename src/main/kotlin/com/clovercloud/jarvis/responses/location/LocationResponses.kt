@@ -1,5 +1,10 @@
 package com.clovercloud.jarvis.responses.location
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+private val FORMATTER_24H = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
 data class OsmAddress(
     val road: String? = null,
     val houseNumber: String? = null,
@@ -25,7 +30,8 @@ data class ReverseGeocodeResponse(
     val osmId: Long? = null,
     val placeId: Long? = null,
     val boundingBox: List<Double>? = null,
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Reverse geocoded address is static and estimated to be valid indefinitely."
 )
 
 data class GeocodePlaceItem(
@@ -43,7 +49,8 @@ data class GeocodeResponse(
     val query: String,
     val totalResults: Int,
     val places: List<GeocodePlaceItem>,
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Geocoded coordinates and address data are static and estimated to be valid indefinitely."
 )
 
 data class NearbyPlaceItem(
@@ -68,5 +75,6 @@ data class NearbyPlacesResponse(
     val searchRadiusKm: Double,
     val totalFound: Int,
     val places: List<NearbyPlaceItem>,
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Nearby amenities and points of interest are estimated to be valid for ~1-2 hours."
 )
