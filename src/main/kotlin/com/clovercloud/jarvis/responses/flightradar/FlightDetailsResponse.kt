@@ -1,9 +1,6 @@
 package com.clovercloud.jarvis.responses.flightradar
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-private val FORMATTER_24H = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+import com.clovercloud.jarvis.util.TimeUtil
 
 data class FlightDetailsResponse(
     val flightNumber: String?,
@@ -22,6 +19,6 @@ data class FlightDetailsResponse(
     val squawk: String?,
     val estimatedArrival: String?,
     val lastUpdatedUtc: String?,
-    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val retrievedAt: String = TimeUtil.amsterdamNowFormatted(),
     val note: String? = "Live flight tracking telemetry and status are estimated to be valid for ~30-60 seconds."
 )

@@ -14,26 +14,30 @@ class ClockTools {
 
     @McpTool(
         name = "get_current_time",
-        description = "Returns current time, date, day of week, and epoch timestamp for a timezone."
+        description = "Returns current time, date, day of week, and epoch timestamp for a timezone (defaults to Europe/Amsterdam)."
     )
     fun getCurrentTime(
-        @McpToolParam(description = "Timezone ID (e.g. UTC, Europe/Amsterdam, America/New_York)", required = false)
+        @McpToolParam(description = "Timezone ID (e.g. Europe/Amsterdam, UTC, America/New_York). Defaults to Europe/Amsterdam.", required = false)
         timezone: String?
     ): ClockResponse {
-        val tz = timezone?.takeIf { it.isNotBlank() } ?: "UTC"
+        val tz = timezone?.takeIf { it.isNotBlank() } ?: "Europe/Amsterdam"
         val zoneId = try {
             ZoneId.of(tz)
         } catch (e: Exception) {
-            ZoneId.of("UTC")
+            ZoneId.of("Europe/Amsterdam")
         }
         val now = ZonedDateTime.now(zoneId)
+        val formattedTime = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+        val formattedDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         return ClockResponse(
             isoTimestamp = now.toOffsetDateTime().toString(),
-            formattedTime = now.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
-            formattedDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+            formattedTime = formattedTime,
+            formattedDate = formattedDate,
             dayOfWeek = now.dayOfWeek.name,
             timeZone = zoneId.id,
-            epochSeconds = Instant.now().epochSecond
+            epochSeconds = Instant.now().epochSecond,
+            dateTime24h = "$formattedDate $formattedTime",
+            note = "Instantaneous current time snapshot for ${zoneId.id}. Valid for the current second."
         )
     }
 }

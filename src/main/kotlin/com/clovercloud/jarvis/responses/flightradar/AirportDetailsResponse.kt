@@ -1,9 +1,6 @@
 package com.clovercloud.jarvis.responses.flightradar
 
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-private val FORMATTER_24H = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+import com.clovercloud.jarvis.util.TimeUtil
 
 data class RunwayInfo(
     val designator: String,
@@ -25,6 +22,6 @@ data class AirportDetailsResponse(
     val timezone: String?,
     val timezoneOffset: String?,
     val runways: List<RunwayInfo>,
-    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val retrievedAt: String = TimeUtil.amsterdamNowFormatted(),
     val note: String? = "Airport specifications and runway data are static and estimated to be valid for several months."
 )

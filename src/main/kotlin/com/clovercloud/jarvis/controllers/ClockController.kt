@@ -22,23 +22,27 @@ class ClockController {
     @Operation(summary = "Get current time", description = "Returns current time, date, day of week, and epoch timestamp for the specified timezone.")
     @GetMapping("/time")
     fun getCurrentTime(
-        @Parameter(description = "Timezone ID (e.g., UTC, Europe/Amsterdam, America/New_York)", example = "Europe/Amsterdam")
-        @RequestParam(required = false, defaultValue = "UTC") timezone: String
+        @Parameter(description = "Timezone ID (e.g., Europe/Amsterdam, UTC, America/New_York)", example = "Europe/Amsterdam")
+        @RequestParam(required = false, defaultValue = "Europe/Amsterdam") timezone: String
     ): ResponseEntity<ClockResponse> {
         val zoneId = try {
             ZoneId.of(timezone)
         } catch (e: Exception) {
-            ZoneId.of("UTC")
+            ZoneId.of("Europe/Amsterdam")
         }
 
         val now = ZonedDateTime.now(zoneId)
+        val formattedTime = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+        val formattedDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
         val response = ClockResponse(
             isoTimestamp = now.toOffsetDateTime().toString(),
-            formattedTime = now.format(DateTimeFormatter.ofPattern("HH:mm:ss")),
-            formattedDate = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+            formattedTime = formattedTime,
+            formattedDate = formattedDate,
             dayOfWeek = now.dayOfWeek.name,
             timeZone = zoneId.id,
-            epochSeconds = Instant.now().epochSecond
+            epochSeconds = Instant.now().epochSecond,
+            dateTime24h = "$formattedDate $formattedTime",
+            note = "Instantaneous current time snapshot for ${zoneId.id}. Valid for the current second."
         )
 
         return ResponseEntity.ok(response)

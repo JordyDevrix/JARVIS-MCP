@@ -46,7 +46,7 @@ curl "http://localhost:8080/v1/development/version"
 
 - `GET /v1/tools/clock/time`
 - Query params:
-  - `timezone` (optional, default `UTC`)
+  - `timezone` (optional, default `Europe/Amsterdam`)
 
 Example:
 
