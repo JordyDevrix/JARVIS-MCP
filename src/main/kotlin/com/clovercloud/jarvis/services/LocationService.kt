@@ -153,11 +153,14 @@ class LocationService(
                 }
             }
 
+            val validityNote = "Geocoded coordinates and address data are static and estimated to be valid indefinitely."
+            val finalNote = if (places.isEmpty()) "No locations found matching '$cleanQuery'. $validityNote" else validityNote
+
             val response = GeocodeResponse(
                 query = cleanQuery,
                 totalResults = places.size,
                 places = places,
-                note = if (places.isEmpty()) "No locations found matching '$cleanQuery'." else null
+                note = finalNote
             )
 
             geocodeCache[cacheKey] = CacheEntry(response, now)
@@ -168,7 +171,7 @@ class LocationService(
                 query = cleanQuery,
                 totalResults = 0,
                 places = emptyList(),
-                note = "Error parsing geocoding results from OpenStreetMap."
+                note = "Error parsing geocoding results from OpenStreetMap. Geocoded data is static and estimated to be valid indefinitely."
             )
         }
     }
@@ -213,7 +216,7 @@ class LocationService(
                 searchRadiusKm = cleanRadius,
                 totalFound = 0,
                 places = emptyList(),
-                note = "Could not retrieve nearby places from OpenStreetMap."
+                note = "Could not retrieve nearby places from OpenStreetMap. Nearby amenity data is estimated to be valid for ~1-2 hours."
             )
         }
 
@@ -268,6 +271,8 @@ class LocationService(
             }
 
             val sortedPlaces = places.sortedBy { it.distanceMeters }.take(cleanLimit)
+            val validityNote = "Nearby amenities and points of interest are estimated to be valid for ~1-2 hours."
+            val finalNote = if (sortedPlaces.isEmpty()) "No '$cleanCategory' found within $cleanRadius km. $validityNote" else validityNote
 
             val response = NearbyPlacesResponse(
                 observerLocation = observerDesc,
@@ -275,7 +280,7 @@ class LocationService(
                 searchRadiusKm = cleanRadius,
                 totalFound = sortedPlaces.size,
                 places = sortedPlaces,
-                note = if (sortedPlaces.isEmpty()) "No '$cleanCategory' found within $cleanRadius km." else null
+                note = finalNote
             )
 
             nearbyPlacesCache[cacheKey] = CacheEntry(response, now)

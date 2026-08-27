@@ -87,12 +87,13 @@ class OvService(
             .sortedBy { it.distanceKm }
             .take(cleanLimit)
 
+        val validityNote = "Live vehicle GPS coordinates are real-time telemetry and estimated to be valid for ~15-30 seconds as vehicles are actively in transit."
         val note = when {
-            matchingVehicles.isNotEmpty() -> null
+            matchingVehicles.isNotEmpty() -> validityNote
             else -> {
                 val closest = allVehicles.minByOrNull { haversineDistanceKm(observerLat, observerLon, it.latitude, it.longitude) }
                 val closestDist = if (closest != null) haversineDistanceKm(observerLat, observerLon, closest.latitude, closest.longitude) else 0.0
-                "No public transport vehicles found within $cleanRadius km matching criteria. (Closest active vehicle is ${closest?.operator ?: ""} line ${closest?.lineNumber ?: ""} at %.1f km away). Note: Dutch trains (NS) do not broadcast raw GPS coords; live train departures and platform info are available via stop departures.".format(Locale.US, closestDist)
+                "No public transport vehicles found within $cleanRadius km matching criteria. (Closest active vehicle is ${closest?.operator ?: ""} line ${closest?.lineNumber ?: ""} at %.1f km away). $validityNote Note: Dutch trains (NS) do not broadcast raw GPS coords; live train departures and platform info are available via stop departures.".format(Locale.US, closestDist)
             }
         }
 
@@ -206,6 +207,13 @@ class OvService(
                 .sortedWith(compareBy({ it.expectedDepartureTime ?: it.targetDepartureTime ?: "" }, { it.linePublicNumber ?: "" }))
                 .take(cleanLimit)
 
+            val validityNote = "Live departure times, platform assignments, and delay predictions are estimated to be valid for ~30-60 seconds."
+            val finalNote = if (sortedDepartures.isEmpty()) {
+                "No departures currently scheduled or active for stop '$stopCode'. $validityNote"
+            } else {
+                validityNote
+            }
+
             OvStopDeparturesResponse(
                 stopAreaCode = stopCode,
                 stopName = stopName ?: cleanInput,
@@ -215,7 +223,7 @@ class OvService(
                 totalDepartures = sortedDepartures.size,
                 departures = sortedDepartures,
                 disruptions = disruptions,
-                note = if (sortedDepartures.isEmpty()) "No departures currently scheduled or active for stop '$stopCode'." else null
+                note = finalNote
             )
         } catch (e: Exception) {
             logger.error("Failed to parse stop departures for '$stopCode': ${e.message}", e)
@@ -227,7 +235,7 @@ class OvService(
                 longitude = resolvedStop?.longitude,
                 totalDepartures = 0,
                 departures = emptyList(),
-                note = "Error parsing departure data for stop '$stopCode'."
+                note = "Error parsing departure data for stop '$stopCode'. Live data is estimated to be valid for ~30-60 seconds."
             )
         }
     }
@@ -285,12 +293,18 @@ class OvService(
         }
 
         val finalStops = results.take(cleanLimit)
+        val validityNote = "Public transport stop and station data is estimated to be valid for ~24 hours."
+        val finalNote = if (finalStops.isEmpty()) {
+            "No public transport stops found matching '$cleanQuery'. $validityNote"
+        } else {
+            validityNote
+        }
 
         return OvStopsSearchResponse(
             query = cleanQuery,
             totalMatches = finalStops.size,
             stops = finalStops,
-            note = if (finalStops.isEmpty()) "No public transport stops found matching '$cleanQuery'." else null
+            note = finalNote
         )
     }
 

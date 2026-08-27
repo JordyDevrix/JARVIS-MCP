@@ -6,5 +6,7 @@ data class ClockResponse(
     val formattedDate: String,
     val dayOfWeek: String,
     val timeZone: String,
-    val epochSeconds: Long
+    val epochSeconds: Long,
+    val dateTime24h: String = "$formattedDate $formattedTime",
+    val note: String = "Instantaneous current time snapshot. Valid for the current second."
 )

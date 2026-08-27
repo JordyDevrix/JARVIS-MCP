@@ -1,5 +1,10 @@
 package com.clovercloud.jarvis.responses.ov
 
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+private val FORMATTER_24H = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
 data class LiveOvVehicle(
     val label: String?,
     val `operator`: String?,
@@ -24,7 +29,8 @@ data class LiveOvLocationsResponse(
     val searchRadiusKm: Double,
     val vehiclesFoundCount: Int,
     val vehicles: List<LiveOvVehicle>,
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Live vehicle GPS coordinates are real-time telemetry and estimated to be valid for ~15-30 seconds as vehicles are in transit."
 )
 
 data class OvDepartureItem(
@@ -51,7 +57,8 @@ data class OvStopDeparturesResponse(
     val totalDepartures: Int,
     val departures: List<OvDepartureItem>,
     val disruptions: List<String> = emptyList(),
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Live departure times, platform assignments, and delay predictions are estimated to be valid for ~30-60 seconds."
 )
 
 data class OvStopItem(
@@ -67,5 +74,6 @@ data class OvStopsSearchResponse(
     val query: String?,
     val totalMatches: Int,
     val stops: List<OvStopItem>,
-    val note: String? = null
+    val retrievedAt: String = FORMATTER_24H.format(LocalDateTime.now()),
+    val note: String? = "Public transport stop and station data is estimated to be valid for ~24 hours."
 )

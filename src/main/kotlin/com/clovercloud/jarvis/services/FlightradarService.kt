@@ -32,6 +32,7 @@ class FlightradarService(
         val observerDesc = "Lat: %.4f, Lon: %.4f".format(Locale.US, observerLat, observerLon)
         val cleanRadius = radiusKm.coerceIn(0.5, 200.0)
         val cleanLimit = limit.coerceIn(1, 100)
+        val validityNote = "Live airborne flight positions are estimated to be valid for ~15-30 seconds as aircraft are actively moving."
 
         if (!client.isConfigured()) {
             return NearbyFlightsResponse(
@@ -39,7 +40,7 @@ class FlightradarService(
                 searchRadiusKm = cleanRadius,
                 flightsFoundCount = 0,
                 flights = emptyList(),
-                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable."
+                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable. $validityNote"
             )
         }
 
@@ -96,18 +97,18 @@ class FlightradarService(
             }
 
         val note = when {
-            mappedFlights.isNotEmpty() -> null
+            mappedFlights.isNotEmpty() -> validityNote
             rawFlights.isNotEmpty() -> {
                 val closest = rawFlights.minByOrNull { haversineDistanceKm(observerLat, observerLon, it.lat, it.lon) }
                 val closestDist = if (closest != null) haversineDistanceKm(observerLat, observerLon, closest.lat, closest.lon) else 0.0
                 val isSandboxFlight = closest?.flight == "SK7679" || closest?.fr24Id == "333ca4a2"
                 if (isSandboxFlight) {
-                    "No aircraft currently airborne within $cleanRadius km. (Detected sandbox test flight SK7679 at %.1f km away. Note: Your current API token is a Flightradar24 Sandbox key which returns static test flight SK7679. Replace it with a Production API key in .env to track live flights).".format(Locale.US, closestDist)
+                    "No aircraft currently airborne within $cleanRadius km. (Detected sandbox test flight SK7679 at %.1f km away. Note: Your current API token is a Flightradar24 Sandbox key which returns static test flight SK7679. Replace it with a Production API key in .env to track live flights). $validityNote".format(Locale.US, closestDist)
                 } else {
-                    "No aircraft currently airborne within $cleanRadius km of this location. (Closest detected aircraft is ${closest?.flight ?: closest?.callsign} at %.1f km away).".format(Locale.US, closestDist)
+                    "No aircraft currently airborne within $cleanRadius km of this location. (Closest detected aircraft is ${closest?.flight ?: closest?.callsign} at %.1f km away). $validityNote".format(Locale.US, closestDist)
                 }
             }
-            else -> "No aircraft currently airborne within $cleanRadius km of this location."
+            else -> "No aircraft currently airborne within $cleanRadius km of this location. $validityNote"
         }
 
         return NearbyFlightsResponse(
@@ -121,6 +122,8 @@ class FlightradarService(
 
     fun getFlightDetails(query: String): FlightDetailsResponse {
         val cleanQuery = query.trim().uppercase()
+
+        val validityNote = "Live flight tracking telemetry and status are estimated to be valid for ~30-60 seconds."
 
         if (!client.isConfigured()) {
             return FlightDetailsResponse(
@@ -140,7 +143,7 @@ class FlightradarService(
                 squawk = null,
                 estimatedArrival = null,
                 lastUpdatedUtc = null,
-                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable."
+                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable. $validityNote"
             )
         }
 
@@ -178,7 +181,7 @@ class FlightradarService(
                 squawk = null,
                 estimatedArrival = null,
                 lastUpdatedUtc = null,
-                note = "Flight '$cleanQuery' is not currently active or not found in real-time radar data."
+                note = "Flight '$cleanQuery' is not currently active or not found in real-time radar data. $validityNote"
             )
         }
 
@@ -200,7 +203,8 @@ class FlightradarService(
             longitude = flight.lon,
             squawk = flight.squawk,
             estimatedArrival = flight.eta,
-            lastUpdatedUtc = flight.timestamp
+            lastUpdatedUtc = flight.timestamp,
+            note = validityNote
         )
     }
 
@@ -212,6 +216,7 @@ class FlightradarService(
             else -> "both"
         }
         val cleanLimit = limit.coerceIn(1, 100)
+        val validityNote = "Airport arrival and departure flight schedules are estimated to be valid for ~1-2 minutes."
 
         if (!client.isConfigured()) {
             return AirportFlightsResponse(
@@ -219,7 +224,7 @@ class FlightradarService(
                 direction = cleanDir,
                 totalFlights = 0,
                 flights = emptyList(),
-                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable."
+                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable. $validityNote"
             )
         }
 
@@ -250,12 +255,14 @@ class FlightradarService(
             direction = cleanDir,
             totalFlights = flights.size,
             flights = flights,
-            note = if (flights.isEmpty()) "No active $cleanDir flights found for airport $cleanCode." else null
+            note = if (flights.isEmpty()) "No active $cleanDir flights found for airport $cleanCode. $validityNote" else validityNote
         )
     }
 
     fun getAirportDetails(airportCode: String): AirportDetailsResponse {
         val cleanCode = airportCode.trim().uppercase()
+
+        val validityNote = "Airport specifications and runway data are static and estimated to be valid for several months."
 
         if (!client.isConfigured()) {
             return AirportDetailsResponse(
@@ -271,7 +278,7 @@ class FlightradarService(
                 timezone = null,
                 timezoneOffset = null,
                 runways = emptyList(),
-                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable."
+                note = "Flightradar24 API token is not configured. Please set the FR24_API_TOKEN environment variable. $validityNote"
             )
         }
 
@@ -291,7 +298,7 @@ class FlightradarService(
                 timezone = null,
                 timezoneOffset = null,
                 runways = emptyList(),
-                note = "Airport '$cleanCode' not found."
+                note = "Airport '$cleanCode' not found. $validityNote"
             )
         }
 
@@ -320,7 +327,8 @@ class FlightradarService(
             elevationFeet = airport.elevation,
             timezone = airport.timezone?.name,
             timezoneOffset = airport.timezone?.offset?.toString(),
-            runways = runwayInfos
+            runways = runwayInfos,
+            note = validityNote
         )
     }
 
