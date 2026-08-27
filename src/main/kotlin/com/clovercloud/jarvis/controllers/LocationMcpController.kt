@@ -1,6 +1,7 @@
 package com.clovercloud.jarvis.controllers
 
 import com.clovercloud.jarvis.responses.LocationResponse
+import com.clovercloud.jarvis.requests.LocationRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -8,10 +9,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-
-// MCP request body for location
-
-data class LocationRequest(val city: String? = "Amsterdam")
 
 @RestController
 @RequestMapping("/v1/mcp/location")
