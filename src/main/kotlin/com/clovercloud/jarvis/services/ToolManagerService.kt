@@ -1,5 +1,6 @@
 package com.clovercloud.jarvis.services
 
+import com.clovercloud.jarvis.config.McpToolsProperties
 import io.modelcontextprotocol.server.McpServerFeatures
 import io.modelcontextprotocol.server.McpSyncServer
 import org.slf4j.LoggerFactory
@@ -22,7 +23,8 @@ data class ToolInfo(
 @Service
 class ToolManagerService(
     @Lazy private val mcpSyncServer: McpSyncServer,
-    private val applicationContext: ApplicationContext
+    private val applicationContext: ApplicationContext,
+    private val properties: McpToolsProperties
 ) {
     private val logger = LoggerFactory.getLogger(ToolManagerService::class.java)
 
@@ -35,12 +37,32 @@ class ToolManagerService(
             bean.javaClass.methods.any { it.isAnnotationPresent(McpTool::class.java) }
         }
         val specs = SyncMcpAnnotationProviders.toolSpecifications(toolObjects.toList())
+        var disabledCount = 0
+
         for (spec in specs) {
             val name = spec.tool().name()
             toolRegistry[name] = spec
-            toolStatus[name] = true
+
+            val shouldEnable = properties.isEnabledOnStartup(name)
+            toolStatus[name] = shouldEnable
+
+            if (!shouldEnable) {
+                try {
+                    mcpSyncServer.removeTool(name)
+                    disabledCount++
+                    logger.info("MCP tool '$name' is DISABLED on startup via configuration")
+                } catch (e: Exception) {
+                    logger.warn("Failed to unregister disabled tool '$name' on startup: ${e.message}")
+                }
+            }
         }
-        logger.info("ToolManagerService registered ${toolRegistry.size} MCP tools: ${toolRegistry.keys}")
+
+        if (disabledCount > 0) {
+            mcpSyncServer.notifyToolsListChanged()
+        }
+
+        val activeCount = toolStatus.values.count { it }
+        logger.info("ToolManagerService initialized with ${toolRegistry.size} tools ($activeCount enabled, $disabledCount disabled on startup)")
     }
 
     fun listTools(): List<ToolInfo> {
