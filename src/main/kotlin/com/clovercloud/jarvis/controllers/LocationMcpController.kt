@@ -1,18 +1,11 @@
 package com.clovercloud.jarvis.controllers
 
 import com.clovercloud.jarvis.responses.LocationResponse
-import com.clovercloud.jarvis.requests.LocationRequest
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.ai.mcp.annotation.McpTool
+import org.springframework.ai.mcp.annotation.McpToolParam
+import org.springframework.stereotype.Component
 
-@RestController
-@RequestMapping("/v1/mcp/location")
-@Tag(name = "Location MCP", description = "MCP-compliant endpoint for location tool")
+@Component
 class LocationMcpController {
     private val presetLocations = mapOf(
         "amsterdam" to LocationResponse("Amsterdam", "Netherlands", "NL", 52.3676, 4.9041, "Europe/Amsterdam", "Mock GPS location for Amsterdam headquarters"),
@@ -21,23 +14,32 @@ class LocationMcpController {
         "tokyo" to LocationResponse("Tokyo", "Japan", "JP", 35.6762, 139.6503, "Asia/Tokyo", "Mock GPS location for Tokyo center")
     )
 
-    @Operation(
-        summary = "Execute Location MCP tool",
-        description = "Returns location data for a city in an MCP-compliant result."
+    @McpTool(
+        name = "get_current_location",
+        description = "Returns mock current GPS location of the system/device (Amsterdam headquarters)."
     )
-    @PostMapping
-    fun executeLocation(@RequestBody body: LocationRequest?): ResponseEntity<LocationResponse> {
-        val city = body?.city ?: "Amsterdam"
-        val normalized = city.trim().lowercase()
-        val location = presetLocations[normalized] ?: LocationResponse(
-            city = city.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
+    fun getCurrentLocation(): LocationResponse {
+        return presetLocations["amsterdam"]!!
+    }
+
+    @McpTool(
+        name = "lookup_location",
+        description = "Lookup coordinates and location info for a city."
+    )
+    fun lookupLocation(
+        @McpToolParam(description = "City name to lookup (e.g., Amsterdam, New York, London, Tokyo)", required = false)
+        city: String?
+    ): LocationResponse {
+        val cityName = city?.takeIf { it.isNotBlank() } ?: "Amsterdam"
+        val normalized = cityName.trim().lowercase()
+        return presetLocations[normalized] ?: LocationResponse(
+            city = cityName.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },
             country = "Unknown",
             countryCode = "N/A",
             latitude = 0.0,
             longitude = 0.0,
             timezone = "UTC",
-            description = "Simulated location for $city"
+            description = "Simulated location for $cityName"
         )
-        return ResponseEntity.ok(location)
     }
 }
