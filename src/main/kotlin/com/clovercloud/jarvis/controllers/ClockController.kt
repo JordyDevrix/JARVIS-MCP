@@ -12,15 +12,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-
-data class ClockResponse(
-    val isoTimestamp: String,
-    val formattedTime: String,
-    val formattedDate: String,
-    val dayOfWeek: String,
-    val timeZone: String,
-    val epochSeconds: Long
-)
+import com.clovercloud.jarvis.responses.ClockResponse
 
 @RestController
 @RequestMapping("/v1/tools/clock")
