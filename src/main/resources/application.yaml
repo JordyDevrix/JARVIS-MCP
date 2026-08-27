@@ -16,3 +16,9 @@ springdoc:
   swagger-ui:
     enabled: true
     path: /docs
+
+flightradar24:
+  api-token: ${FR24_API_TOKEN:${FLIGHTRADAR24_API_KEY:}}
+  base-url: ${FR24_BASE_URL:https://fr24api.flightradar24.com}
+  connect-timeout-seconds: 3
+  read-timeout-seconds: 5
