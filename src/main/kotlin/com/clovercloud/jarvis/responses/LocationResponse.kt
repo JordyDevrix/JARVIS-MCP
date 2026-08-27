@@ -7,5 +7,8 @@ data class LocationResponse(
     val latitude: Double,
     val longitude: Double,
     val timezone: String,
-    val description: String
+    val description: String,
+    val region: String? = null,
+    val postalCode: String? = null,
+    val source: String = "REAL"
 )
