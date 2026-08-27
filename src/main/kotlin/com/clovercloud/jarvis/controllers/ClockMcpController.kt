@@ -1,6 +1,7 @@
 package com.clovercloud.jarvis.controllers
 
 import com.clovercloud.jarvis.responses.ClockResponse
+import com.clovercloud.jarvis.requests.ClockRequest
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
@@ -12,10 +13,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-
-// Defines the expected MCP request body for clock
-
-data class ClockRequest(val timezone: String? = "UTC")
 
 @RestController
 @RequestMapping("/v1/mcp/clock")
