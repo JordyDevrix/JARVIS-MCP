@@ -1,4 +1,4 @@
-package com.clovercloud.jarvis.controllers
+package com.clovercloud.jarvis.tools
 
 import com.clovercloud.jarvis.responses.LocationResponse
 import org.springframework.ai.mcp.annotation.McpTool
@@ -6,7 +6,7 @@ import org.springframework.ai.mcp.annotation.McpToolParam
 import org.springframework.stereotype.Component
 
 @Component
-class LocationMcpController {
+class LocationTools {
     private val presetLocations = mapOf(
         "amsterdam" to LocationResponse("Amsterdam", "Netherlands", "NL", 52.3676, 4.9041, "Europe/Amsterdam", "Mock GPS location for Amsterdam headquarters"),
         "new york" to LocationResponse("New York", "United States", "US", 40.7128, -74.0060, "America/New_York", "Mock GPS location for New York branch"),

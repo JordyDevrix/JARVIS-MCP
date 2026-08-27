@@ -1,4 +1,4 @@
-package com.clovercloud.jarvis.controllers
+package com.clovercloud.jarvis.tools
 
 import com.clovercloud.jarvis.responses.ClockResponse
 import org.springframework.ai.mcp.annotation.McpTool
@@ -10,7 +10,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @Component
-class ClockMcpController {
+class ClockTools {
 
     @McpTool(
         name = "get_current_time",

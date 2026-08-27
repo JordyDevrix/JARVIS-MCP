@@ -19,6 +19,15 @@ FROM eclipse-temurin:25-jre
 
 WORKDIR /app
 
+# Build arguments for version and deployment tracking
+ARG APP_VERSION=dev
+ARG GIT_COMMIT=local
+ARG BUILD_TIME=unknown
+
+ENV APP_VERSION=${APP_VERSION} \
+    GIT_COMMIT=${GIT_COMMIT} \
+    BUILD_TIME=${BUILD_TIME}
+
 # Install curl for container health checks
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl && \
