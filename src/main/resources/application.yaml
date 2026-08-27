@@ -31,10 +31,20 @@ ovapi:
   vehicle-cache-ttl-seconds: 15
   stop-cache-ttl-hours: 24
 
+location:
+  nominatim-base-url: ${NOMINATIM_BASE_URL:https://nominatim.openstreetmap.org}
+  ip-geolocation-base-url: ${IP_GEOLOCATION_BASE_URL:http://ip-api.com/json}
+  connect-timeout-seconds: 5
+  read-timeout-seconds: 10
+  cache-ttl-minutes: 60
+
 mcptools:
   enabled:
     get_current_time: true
     get_current_location: true
+    reverse_geocode: true
+    geocode_address: true
+    find_nearby_places: true
     lookup_location: true
     get_nearby_flights: false
     get_flight_details: false

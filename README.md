@@ -54,19 +54,49 @@ Example:
 curl "http://localhost:8080/v1/tools/clock/time?timezone=Europe/Amsterdam"
 ```
 
-#### Location Tool
+#### Location & OpenStreetMap Tools
 
 - `GET /v1/tools/location/current`
-- Returns the default mock location (Amsterdam)
+- Real detected current location using IP geolocation with fallback to headquarters.
 
-- `GET /v1/tools/location/lookup`
+- `GET /v1/tools/location/reverse`
+- Reverse geocodes latitude and longitude into detailed street address, city, postcode, and country via OpenStreetMap Nominatim.
 - Query params:
-  - `city` (optional, default `Amsterdam`)
+  - `latitude` (required, e.g. `52.3676`)
+  - `longitude` (required, e.g. `4.9041`)
+  - `zoom` (optional, default `18`)
 
 Example:
 
 ```bash
-curl "http://localhost:8080/v1/tools/location/lookup?city=Tokyo"
+curl "http://localhost:8080/v1/tools/location/reverse?latitude=52.3676&longitude=4.9041"
+```
+
+- `GET /v1/tools/location/geocode`
+- Forward geocodes address, landmark, or city name worldwide to geographic coordinates and bounding box.
+- Query params:
+  - `query` (required, e.g. `Dam Square Amsterdam`)
+  - `country_code` (optional, e.g. `nl`, `us`)
+  - `limit` (optional, default `5`)
+
+Example:
+
+```bash
+curl "http://localhost:8080/v1/tools/location/geocode?query=Dam+Square+Amsterdam"
+```
+
+- `GET /v1/tools/location/nearby`
+- Searches points of interest (POIs) and amenities (pharmacies, hospitals, supermarkets, EV charging, restaurants, parking, ATMs) around coordinates with distance in meters and bearing.
+- Query params:
+  - `query` (required, e.g. `pharmacy`, `supermarket`, `charging_station`)
+  - `latitude`, `longitude` (optional, defaults to current location)
+  - `radius_km` (optional, default `1.0`)
+  - `limit` (optional, default `10`)
+
+Example:
+
+```bash
+curl "http://localhost:8080/v1/tools/location/nearby?query=pharmacy&latitude=52.3676&longitude=4.9041&radius_km=1.0"
 ```
 
 #### Dutch Public Transport (OV) Tools
@@ -136,7 +166,28 @@ curl -X POST "http://localhost:8080/v1/mcp/clock" \
 
 #### Location MCP
 
-- `POST /v1/mcp/location`
+- `POST /v1/mcp/location/reverse`
+- JSON body:
+
+```json
+{ "latitude": 52.3676, "longitude": 4.9041 }
+```
+
+- `POST /v1/mcp/location/geocode`
+- JSON body:
+
+```json
+{ "query": "Dam Square Amsterdam", "countryCode": "nl" }
+```
+
+- `POST /v1/mcp/location/nearby`
+- JSON body:
+
+```json
+{ "categoryOrQuery": "pharmacy", "radiusKm": 1.0 }
+```
+
+- `POST /v1/mcp/location` (legacy compatibility)
 - JSON body:
 
 ```json
@@ -146,9 +197,9 @@ curl -X POST "http://localhost:8080/v1/mcp/clock" \
 Example:
 
 ```bash
-curl -X POST "http://localhost:8080/v1/mcp/location" \
+curl -X POST "http://localhost:8080/v1/mcp/location/reverse" \
   -H "Content-Type: application/json" \
-  -d '{"city":"London"}'
+  -d '{"latitude":52.3676,"longitude":4.9041}'
 ```
 
 #### Dutch OV MCP
@@ -184,9 +235,9 @@ curl -X POST "http://localhost:8080/v1/mcp/location" \
 
 - `src/main/kotlin/com/clovercloud/jarvis/JarvisApplication.kt`: Spring Boot entry point
 - `src/main/kotlin/com/clovercloud/jarvis/config`: Configuration and logging components
-- `src/main/kotlin/com/clovercloud/jarvis/clients`: External REST clients (FlightradarClient, OvClient)
-- `src/main/kotlin/com/clovercloud/jarvis/services`: Business logic & cache management (FlightradarService, OvService, ToolManagerService)
-- `src/main/kotlin/com/clovercloud/jarvis/facades`: Unified facades (OvFacade) decoupling controllers and tools from services
+- `src/main/kotlin/com/clovercloud/jarvis/clients`: External REST clients (FlightradarClient, OvClient, OsmClient)
+- `src/main/kotlin/com/clovercloud/jarvis/services`: Business logic & cache management (FlightradarService, OvService, LocationService, ToolManagerService)
+- `src/main/kotlin/com/clovercloud/jarvis/facades`: Unified facades (OvFacade, LocationFacade) decoupling controllers and tools from services
 - `src/main/kotlin/com/clovercloud/jarvis/controllers`: HTTP REST controllers and development endpoints
 - `src/main/kotlin/com/clovercloud/jarvis/tools`: MCP tool implementations (ClockTools, LocationTools, FlightradarTools, OvTools)
 - `src/main/kotlin/com/clovercloud/jarvis/requests`: Request payload models

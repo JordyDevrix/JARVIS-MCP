@@ -4,7 +4,6 @@ import com.clovercloud.jarvis.responses.ov.LiveOvLocationsResponse
 import com.clovercloud.jarvis.responses.ov.OvStopDeparturesResponse
 import com.clovercloud.jarvis.responses.ov.OvStopsSearchResponse
 import com.clovercloud.jarvis.services.OvService
-import com.clovercloud.jarvis.tools.LocationTools
 import org.springframework.stereotype.Component
 
 /**
@@ -14,7 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class OvFacade(
     private val ovService: OvService,
-    private val locationTools: LocationTools
+    private val locationFacade: LocationFacade
 ) {
 
     fun getLiveLocations(
@@ -27,7 +26,7 @@ class OvFacade(
         limit: Int?
     ): LiveOvLocationsResponse {
         val radius = radiusKm ?: 5.0
-        val currentLoc = if (latitude == null || longitude == null) locationTools.getCurrentLocation() else null
+        val currentLoc = if (latitude == null || longitude == null) locationFacade.getCurrentLocation() else null
         val lat = latitude ?: currentLoc?.latitude ?: 52.3676
         val lon = longitude ?: currentLoc?.longitude ?: 4.9041
         val maxLimit = limit ?: 25
